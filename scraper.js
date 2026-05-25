@@ -276,7 +276,28 @@ const COMPANIES = [
   { id:"icici",        name:"ICICI Bank",       ats:"custom", url:"https://www.icicicareers.com",                               sector:"BFSI" },
   { id:"axisbank",     name:"Axis Bank",        ats:"custom", url:"https://www.axisbank.com/careers",                          sector:"BFSI" },
   { id:"paytm",        name:"Paytm",            ats:"custom", url:"https://paytm.com/careers",                                 sector:"Fintech" },
-  { id:"swiggy",       name:"Swiggy",           ats:"custom", url:"https://careers.swiggy.com",                                sector:"Consumer Tech" },
+  { id:"swiggy",       name:"Swiggy",            ats:"api", sector:"Consumer Tech",
+    fetcher: async () => {
+      const res = await axios.post(
+        "https://swiggy.mynexthire.com/employer/careers/reqlist/get",
+        { source:"careers", code:"", filterByBuId:-1 },
+        { headers:{
+            "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Content-Type":"application/json",
+            "Accept":"application/json",
+            "Referer":"https://careers.swiggy.com"
+          }, timeout:15000 }
+      );
+      const jobs = res.data?.data || res.data?.jobs || res.data?.reqList || (Array.isArray(res.data) ? res.data : []);
+      return jobs.map(j => ({
+        role:     j.jobTitle || j.title || j.reqTitle || "Unknown",
+        location: j.jobLocation || j.location || j.city || "India",
+        applyUrl: j.applyUrl || j.jobUrl || `https://careers.swiggy.com`,
+        jobType:  j.jobType || "Full-time",
+        description: j.jobDescription || j.description || "",
+      }));
+    }
+  },
   { id:"meesho",       name:"Meesho",           ats:"custom", url:"https://meesho.io/careers",                                 sector:"Consumer Tech" },
   { id:"cred",         name:"CRED",             ats:"custom", url:"https://careers.cred.club",                                 sector:"Fintech" },
   { id:"zerodha",      name:"Zerodha",          ats:"custom", url:"https://zerodha.com/careers/",                              sector:"Fintech" },
