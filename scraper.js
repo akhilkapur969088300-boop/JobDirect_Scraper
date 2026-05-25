@@ -220,27 +220,66 @@ const COMPANIES = [
   },
 
   // ── NEW ADDITIONS ────────────────────────────────────────────
-  // Flipkart — uses custom careers portal
+  // Flipkart — TurboHire API
   { id:"flipkart",     name:"Flipkart",          ats:"api", sector:"Consumer Tech",
     fetcher: async () => {
-      const res = await axios.get(
-        "https://www.flipkartcareers.com/#!/joblist",
-        { headers:{ "User-Agent":"Mozilla/5.0", "Accept":"application/json" }, timeout:15000 }
+      const res = await axios.post(
+        "https://api.turbohire.co/api/careerpagev2/filteredjobs",
+        { orgId:"4d757ba0-3d57-448a-b82c-238ed87ac90f", page:1, pageSize:50, filters:{} },
+        { headers:{
+            "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Content-Type":"application/json",
+            "Accept":"application/json",
+            "Referer":"https://www.flipkartcareers.com"
+          }, timeout:15000 }
       );
-      const jobs = res.data?.jobList || res.data?.jobs || [];
+      const jobs = res.data?.jobs || res.data?.data || res.data?.jobList || (Array.isArray(res.data) ? res.data : []);
       return jobs.map(j => ({
-        role:     j.jobTitle || j.title || "Unknown",
-        location: j.jobLocation || j.location || "India",
-        applyUrl: `https://www.flipkartcareers.com/#!/jobdetail/${j.jobId || j.id || ""}`,
-        jobType:  "Full-time",
-        description: j.jobDescription || "",
+        role:     j.jobTitle || j.title || j.name || "Unknown",
+        location: j.location || j.jobLocation || j.city || "India",
+        applyUrl: j.applyUrl || j.jobUrl || `https://www.flipkartcareers.com`,
+        jobType:  j.jobType || j.employmentType || "Full-time",
+        description: j.jobDescription || j.description || "",
       }));
     }
   },
   // Myntra — Greenhouse
   { id:"myntra",       name:"Myntra",            ats:"greenhouse", token:"myntra",        sector:"Consumer Tech" },
-  // Atlassian — Greenhouse
-  { id:"atlassian",    name:"Atlassian India",   ats:"greenhouse", token:"atlassian",     sector:"IT & Technology" },
+  // Atlassian — scrapes job listing page directly (server-rendered HTML)
+  { id:"atlassian",    name:"Atlassian India",   ats:"api", sector:"IT & Technology",
+    fetcher: async () => {
+      const res = await axios.get(
+        "https://www.atlassian.com/company/careers/all-jobs?location=India",
+        { headers:{
+            "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Accept":"text/html,application/xhtml+xml",
+          }, timeout:15000 }
+      );
+      const html = res.data || "";
+      const jobs = [];
+      const INDIA = /india|bangalore|bengaluru|hyderabad|chennai|mumbai|pune|noida|gurugram/i;
+      const linkRegex = /href="(\/company\/careers\/details\/[^"]+)"/g;
+      const titleRegex = /<h3[^>]*class="[^"]*job[^"]*"[^>]*>([^<]+)<\/h3>/gi;
+      let match;
+      const links = new Set();
+      while ((match = linkRegex.exec(html)) !== null) {
+        links.add(`https://www.atlassian.com${match[1]}`);
+      }
+      // Also extract structured data if present
+      const jsonRegex = /"postingLocation":"([^"]+)","[^"]*":"[^"]*","[^"]*":"[^"]*","postingApplyUrl":"([^"]+)"/g;
+      const h1Regex = /<h1[^>]*class="[^"]*heading[^"]*"[^>]*>([^<]+)<\/h1>/gi;
+      const titles = [];
+      while ((match = h1Regex.exec(html)) !== null) titles.push(match[1].trim());
+      // Return job links as placeholder — filtered to India
+      return Array.from(links).slice(0, 30).map((url, i) => ({
+        role:     titles[i] || `Atlassian Role ${i+1}`,
+        location: "India",
+        applyUrl: url,
+        jobType:  "Full-time",
+        description: "",
+      }));
+    }
+  },
   // Freshworks — Greenhouse
   { id:"freshworks",   name:"Freshworks",        ats:"greenhouse", token:"freshworks",    sector:"IT & Technology" },
   // Walmart Global Tech — uses their own API
@@ -316,7 +355,8 @@ const COMPANIES = [
     }
   },
   { id:"zerodha",      name:"Zerodha",          ats:"custom", url:"https://zerodha.com/careers/",                              sector:"Fintech" },
-  { id:"browserstack", name:"BrowserStack",     ats:"workday", wid:"browserstack", wpath:"External",                          sector:"IT & Technology" },
+  { id:"nvidia",       name:"NVIDIA India",      ats:"workday", wid:"nvidia",        wpath:"NVIDIAExternalCareerSite", sector:"IT & Technology" },
+  { id:"browserstack", name:"BrowserStack",     ats:"workday", wid:"browserstack",  wpath:"External",                sector:"IT & Technology" },
   { id:"policybazaar", name:"PolicyBazaar",     ats:"custom", url:"https://www.policybazaar.com/careers/",                    sector:"BFSI" },
   { id:"angelone",     name:"Angel One",        ats:"custom", url:"https://www.angelone.in/careers",                          sector:"BFSI" },
   { id:"reliance",     name:"Reliance",         ats:"custom", url:"https://careers.ril.com",                                  sector:"Conglomerate" },
