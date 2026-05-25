@@ -76,12 +76,8 @@ const COMPANIES = [
     id:"google", name:"Google India", ats:"api", sector:"IT & Technology",
     fetcher: async () => {
       const res = await axios.get(
-        "https://careers.google.com/api/v3/search/?location=India&num=20&page=1&sort_by=date",
-        { headers:{
-            "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            "Accept":"application/json, text/plain, */*",
-            "Referer":"https://careers.google.com/jobs/results/"
-          }, timeout:15000 }
+        "https://careers.google.com/api/v3/search/?location=India&num=20&page=1",
+        { headers:{ "User-Agent":"Mozilla/5.0", "Accept":"application/json" }, timeout:15000 }
       );
       return (res.data?.jobs || []).map(j => ({
         role:     j.title || "Unknown",
@@ -95,22 +91,17 @@ const COMPANIES = [
   {
     id:"microsoft", name:"Microsoft India", ats:"api", sector:"IT & Technology",
     fetcher: async () => {
-      const res = await axios.get(
-        "https://careers.microsoft.com/v2/api/jobs?l=en_us&pg=1&pgSz=20&o=Relevance&flt=true&lc=India",
-        { headers:{
-            "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            "Accept":"application/json",
-            "Referer":"https://careers.microsoft.com/v2/global/en/locations/india.html"
-          }, timeout:15000 }
+      const res = await axios.post(
+        "https://gcsservices.careers.microsoft.com/search/api/v1/search?lc=India&l=en_us&pg=1&pgSz=20&o=Relevance&flt=true",
+        {},
+        { headers:{ "User-Agent":"Mozilla/5.0", "Accept":"application/json", "Content-Type":"application/json" }, timeout:15000 }
       );
-      const jobs = res.data?.operationResult?.result?.jobs ||
-                   res.data?.jobs || [];
-      return jobs.map(j => ({
+      return (res.data?.operationResult?.result?.jobs || []).map(j => ({
         role:     j.title || "Unknown",
-        location: j.primaryLocation || j.location || "India",
-        applyUrl: `https://careers.microsoft.com/v2/global/en/job/${j.jobId || j.id || ""}`,
+        location: j.primaryLocation || "India",
+        applyUrl: `https://careers.microsoft.com/global/en/job/${j.jobId || ""}`,
         jobType:  j.employmentType || "Full-time",
-        description: j.descriptionTeaser || j.description || "",
+        description: j.descriptionTeaser || "",
       }));
     }
   },
@@ -118,17 +109,13 @@ const COMPANIES = [
     id:"apple", name:"Apple India", ats:"api", sector:"IT & Technology",
     fetcher: async () => {
       const res = await axios.get(
-        "https://jobs.apple.com/api/role/search?filters=countryID%3AIND&page=1&sort=newest",
-        { headers:{
-            "User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-            "Accept":"application/json",
-            "Referer":"https://jobs.apple.com/en-in/search"
-          }, timeout:15000 }
+        "https://jobs.apple.com/api/role/search?&filters=countryID%3AIND&page=1",
+        { headers:{ "User-Agent":"Mozilla/5.0", "Accept":"application/json", "Referer":"https://jobs.apple.com" }, timeout:15000 }
       );
       return (res.data?.searchResults || []).map(j => ({
         role:     j.postingTitle || j.title || "Unknown",
         location: j.locations?.[0]?.name || "India",
-        applyUrl: `https://jobs.apple.com/en-in/details/${j.positionId || j.id || ""}`,
+        applyUrl: `https://jobs.apple.com/en-us/details/${j.positionId || ""}`,
         jobType:  "Full-time",
         description: j.jobSummary || "",
       }));
@@ -137,25 +124,13 @@ const COMPANIES = [
   {
     id:"meta", name:"Meta India", ats:"api", sector:"IT & Technology",
     fetcher: async () => {
-      const params = new URLSearchParams({
-        doc_id: "9897385630303160",
-        variables: JSON.stringify({
-          search_input: {
-            q: "", divisions:[], offices:["India"], roles:[],
-            leadership_levels:[], saved_jobs:[], saved_searches:[],
-            sub_teams:[], teams:[], page:1
-          }
-        })
-      });
       const res = await axios.post(
         "https://www.metacareers.com/graphql",
-        params.toString(),
-        { headers:{
-            "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            "Content-Type":"application/x-www-form-urlencoded",
-            "Accept":"application/json",
-            "x-fb-friendly-name":"CareersJobSearchResultsQuery"
-          }, timeout:15000 }
+        {
+          doc_id: "9897385630303160",
+          variables: JSON.stringify({ search_input: { q: "", divisions: [], offices: ["India"], roles: [], leadership_levels: [], saved_jobs: [], saved_searches: [], sub_teams: [], teams: [], page: 1 } })
+        },
+        { headers:{ "User-Agent":"Mozilla/5.0", "Content-Type":"application/x-www-form-urlencoded" }, timeout:15000 }
       );
       const jobs = res.data?.data?.job_search?.results || [];
       return jobs.map(j => ({
