@@ -33,7 +33,7 @@ if (FULL_SYNC) console.log("🔄 FULL SYNC MODE — fetching all current jobs\n"
 // ── CHROME PATH ──────────────────────────────────────────────
 // Uses your installed Google Chrome directly
 const CHROME_PATH = process.env.PUPPETEER_EXECUTABLE_PATH ||
-  "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+  undefined;
 
 // ── COMPANIES ────────────────────────────────────────────────
 const COMPANIES = [
