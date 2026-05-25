@@ -288,13 +288,13 @@ const COMPANIES = [
             "Referer":"https://careers.swiggy.com"
           }, timeout:15000 }
       );
-      const jobs = res.data?.data || res.data?.jobs || res.data?.reqList || (Array.isArray(res.data) ? res.data : []);
+      const jobs = res.data?.reqDetailsBOList || res.data?.data || res.data?.jobs || (Array.isArray(res.data) ? res.data : []);
       return jobs.map(j => ({
-        role:     j.jobTitle || j.title || j.reqTitle || "Unknown",
-        location: j.jobLocation || j.location || j.city || "India",
-        applyUrl: j.applyUrl || j.jobUrl || `https://careers.swiggy.com`,
+        role:     j.reqTitle || j.jobTitle || j.title || "Unknown",
+        location: j.location || j.locationAddress || j.city || "India",
+        applyUrl: `https://careers.swiggy.com/#/jobdetail/${j.reqId || ""}`,
         jobType:  j.jobType || "Full-time",
-        description: j.jobDescription || j.description || "",
+        description: j.jdDisplay ? j.jdDisplay.substring(0,300) : "",
       }));
     }
   },
