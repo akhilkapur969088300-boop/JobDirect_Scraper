@@ -219,6 +219,50 @@ const COMPANIES = [
     }
   },
 
+  // ── NEW ADDITIONS ────────────────────────────────────────────
+  // Flipkart — uses custom careers portal
+  { id:"flipkart",     name:"Flipkart",          ats:"api", sector:"Consumer Tech",
+    fetcher: async () => {
+      const res = await axios.get(
+        "https://www.flipkartcareers.com/#!/joblist",
+        { headers:{ "User-Agent":"Mozilla/5.0", "Accept":"application/json" }, timeout:15000 }
+      );
+      const jobs = res.data?.jobList || res.data?.jobs || [];
+      return jobs.map(j => ({
+        role:     j.jobTitle || j.title || "Unknown",
+        location: j.jobLocation || j.location || "India",
+        applyUrl: `https://www.flipkartcareers.com/#!/jobdetail/${j.jobId || j.id || ""}`,
+        jobType:  "Full-time",
+        description: j.jobDescription || "",
+      }));
+    }
+  },
+  // Myntra — Greenhouse
+  { id:"myntra",       name:"Myntra",            ats:"greenhouse", token:"myntra",        sector:"Consumer Tech" },
+  // Atlassian — Greenhouse
+  { id:"atlassian",    name:"Atlassian India",   ats:"greenhouse", token:"atlassian",     sector:"IT & Technology" },
+  // Freshworks — Greenhouse
+  { id:"freshworks",   name:"Freshworks",        ats:"greenhouse", token:"freshworks",    sector:"IT & Technology" },
+  // Walmart Global Tech — uses their own API
+  { id:"walmart",      name:"Walmart Global Tech", ats:"api", sector:"IT & Technology",
+    fetcher: async () => {
+      const res = await axios.get(
+        "https://careers.walmart.com/api/jobs?q=&location=India&page=0&sort=date&expand=department,brand,type,rate&jobCareerArea=all",
+        { headers:{ "User-Agent":"Mozilla/5.0", "Accept":"application/json", "Referer":"https://careers.walmart.com" }, timeout:15000 }
+      );
+      const jobs = res.data?.jobs || [];
+      return jobs.filter(j => /india|bangalore|bengaluru|hyderabad|chennai|mumbai/i.test(j.locationName || "")).map(j => ({
+        role:     j.title || "Unknown",
+        location: j.locationName || "India",
+        applyUrl: `https://careers.walmart.com/us/jobs/${j.jobId || ""}`,
+        jobType:  j.type || "Full-time",
+        description: j.shortDescription || "",
+      }));
+    }
+  },
+  // Adobe India — Workday
+  { id:"adobe",        name:"Adobe India",       ats:"workday", wid:"adobe",     wpath:"External",    sector:"IT & Technology" },
+
   // ── CUSTOM (Puppeteer — browser based) ───────────────────────
   // These still use browser scraping for now
   // Will be upgraded to API in next update
