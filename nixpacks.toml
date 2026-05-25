@@ -1,5 +1,9 @@
 [phases.setup]
-nixPkgs = ["google-chrome"]
+nixPkgs = ["nodejs_20", "chromium", "nss", "nspr", "alsa-lib", "atk", "at-spi2-atk", "libdrm", "libxkbcommon", "mesa", "libgbm", "expat", "xorg.libxcb", "xorg.libX11", "xorg.libXcomposite", "xorg.libXdamage", "xorg.libXext", "xorg.libXfixes", "xorg.libXrandr", "xorg.libxshmfence", "xorg.libXtst", "gtk3", "pango", "cairo", "gdk-pixbuf", "glib"]
+
+[variables]
+PUPPETEER_SKIP_DOWNLOAD = "true"
+PUPPETEER_EXECUTABLE_PATH = "/run/current-system/sw/bin/chromium"
 
 [start]
 cmd = "node scraper.js"
