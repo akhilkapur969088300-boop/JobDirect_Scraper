@@ -318,7 +318,7 @@ async function run() {
   const mode = FULL_SYNC ? "FULL SYNC" : "INCREMENTAL";
   console.log(`\n${"═".repeat(54)}`);
   console.log(`🔍 JobDirect [${mode}] — ${new Date().toLocaleString("en-IN")}`);
-  console.log(`   ${COMPANIES.length} companies · Chrome: ${CHROME_PATH.split("\\").slice(-3).join("\\")}`);
+  console.log(`   ${COMPANIES.length} companies · Chrome: ${CHROME_PATH || "system default"}`);
   console.log(`${"═".repeat(54)}`);
 
   let total=0;
