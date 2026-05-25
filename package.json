@@ -1,0 +1,15 @@
+{
+  "name": "jobdirect-scraper",
+  "version": "3.0.0",
+  "main": "scraper.js",
+  "scripts": {
+    "start": "node scraper.js",
+    "fullsync": "node scraper.js --fullsync"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "firebase": "^10.7.0",
+    "node-cron": "^3.0.3",
+    "puppeteer": "^21.0.0"
+  }
+}
