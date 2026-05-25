@@ -299,9 +299,24 @@ const COMPANIES = [
     }
   },
   { id:"meesho",       name:"Meesho",           ats:"custom", url:"https://meesho.io/careers",                                 sector:"Consumer Tech" },
-  { id:"cred",         name:"CRED",             ats:"custom", url:"https://careers.cred.club",                                 sector:"Fintech" },
+  { id:"cred",         name:"CRED",             ats:"api", sector:"Fintech",
+    fetcher: async () => {
+      const res = await axios.get(
+        "https://getpostings-tpma6xih7q-uc.a.run.app/",
+        { headers:{ "User-Agent":"Mozilla/5.0", "Accept":"application/json", "Referer":"https://careers.cred.club" }, timeout:15000 }
+      );
+      const jobs = res.data?.data || (Array.isArray(res.data) ? res.data : []);
+      return jobs.map(j => ({
+        role:     j.text || j.title || "Unknown",
+        location: j.categories?.location || j.categories?.allLocations?.[0] || "India",
+        applyUrl: j.hostedUrl || j.applyUrl || "https://careers.cred.club",
+        jobType:  j.categories?.commitment || "Full-time",
+        description: j.content?.descriptionPlain ? j.content.descriptionPlain.substring(0,300) : "",
+      }));
+    }
+  },
   { id:"zerodha",      name:"Zerodha",          ats:"custom", url:"https://zerodha.com/careers/",                              sector:"Fintech" },
-  { id:"browserstack", name:"BrowserStack",     ats:"custom", url:"https://www.browserstack.com/careers",                     sector:"IT & Technology" },
+  { id:"browserstack", name:"BrowserStack",     ats:"workday", wid:"browserstack", wpath:"External",                          sector:"IT & Technology" },
   { id:"policybazaar", name:"PolicyBazaar",     ats:"custom", url:"https://www.policybazaar.com/careers/",                    sector:"BFSI" },
   { id:"angelone",     name:"Angel One",        ats:"custom", url:"https://www.angelone.in/careers",                          sector:"BFSI" },
   { id:"reliance",     name:"Reliance",         ats:"custom", url:"https://careers.ril.com",                                  sector:"Conglomerate" },
